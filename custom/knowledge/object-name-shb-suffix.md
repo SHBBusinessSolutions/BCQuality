@@ -1,7 +1,7 @@
 ---
 bc-version: [all]
 domain: style
-keywords: [object-name, suffix, -SHB, shb, naming, custom-object, kuerzel, kürzel, product-code, reserved-suffix, appsource, certified]
+keywords: [object-name, suffix, -SHB, shb, naming, custom-object, kuerzel, kürzel, product-code, reserved-suffix, appsource, certified, caption, label, tooltip, user-facing]
 technologies: [al]
 countries: [w1]
 application-area: [all]
@@ -24,6 +24,16 @@ End the object name with `-SHB`, preferably as `<Kürzel>-SHB`, keeping the desc
 - **General / ad-hoc customer PTE work:** end the name with `-SHB`, or `<CustomerKürzel>-SHB` when the work belongs to a specific customer solution. The customer's Kürzel is resolved separately, not from this file.
 - **SHB product apps:** use the product's registered `<ProductKürzel>-SHB` (see *Product / app codes*), e.g. `PWS-SHB`, `RFS-SHB`, `ND2-SHB`.
 - **Certified / AppSource solutions:** use the reserved suffix *without* `-SHB` (see *Reserved certified suffixes*), e.g. objects in the certified project-management solution use `PMG`, not `PMG-SHB`.
+
+### Captions carry the name, not the suffix
+
+The suffix belongs to the **technical object name only** — the developer-facing identifier used in dependency lists, event subscriber pickers, and error stacks. A **caption** is user-facing text shown in the client, so it MUST NOT repeat the suffix. Strip the `-SHB` / `<Kürzel>-SHB` / reserved code from every user-visible string: object `Caption`, field `Caption`, action `Caption`, `ToolTip`, `Label`, and any message text. A user sees *"Vendor Skill"*, never *"Vendor Skill PIL-SHB"*.
+
+- `table 55003 "Vendor Skill PIL-SHB"` → `Caption = 'Vendor Skill'`
+- `page 55004 "Skill Master List PIL-SHB"` → `Caption = 'Skill Master List'`
+- `field(...; "Proficiency Level"; ...) { Caption = 'Proficiency Level'; }` — field captions were never suffixed and stay clean.
+
+The same applies to added actions and controls on extensions: the object name gets the suffix; the caption the user reads does not.
 
 ### Reserved certified suffixes (no `-SHB`)
 
@@ -57,6 +67,7 @@ Suffixes for SHB's own (non-certified) products. Objects in these apps end with 
 | `L-PMG-DXT-SHB` | L-PMG Belegtexte Integration |
 | `ND2-SHB` | Name 2 & Description 2 |
 | `PBI-SHB` | Power BI Connector |
+| `PIL-SHB` | Pilot Applications |
 | `PMG-DXT-SHB` | PMG Belegtexte Integration |
 | `PMG-PBI-SHB` | Power BI Connector PMG |
 | `PPM-PBI-SHB` | Power BI Connector PPM |
@@ -71,4 +82,4 @@ Customer-specific suffixes are **not** stored in this file. A customer solution 
 
 ## Anti Pattern
 
-Object names with no suffix (`pageextension 55001 "Vendor List Ext"`), an inconsistent or ad-hoc marker (`"Vendor List Ext SHB"`, `"SHB_VendorListExt"`, a leading `SHB` prefix), a name padded to 30 characters that leaves no room for the suffix and forces a rename during hand-over, appending `-SHB` to a reserved certified suffix (`"... PMG-SHB"` for the certified project-management solution instead of `PMG`), or inventing a new Kürzel when a registered product code already exists in the workbook.
+Object names with no suffix (`pageextension 55001 "Vendor List Ext"`), an inconsistent or ad-hoc marker (`"Vendor List Ext SHB"`, `"SHB_VendorListExt"`, a leading `SHB` prefix), a name padded to 30 characters that leaves no room for the suffix and forces a rename during hand-over, appending `-SHB` to a reserved certified suffix (`"... PMG-SHB"` for the certified project-management solution instead of `PMG`), or inventing a new Kürzel when a registered product code already exists in the workbook. **Leaking the suffix into user-facing text** — `Caption = 'Vendor Skill PIL-SHB'`, a `ToolTip` or `Label` that ends in `-SHB` — is equally wrong: the suffix is for the technical name, never for what the user reads.
