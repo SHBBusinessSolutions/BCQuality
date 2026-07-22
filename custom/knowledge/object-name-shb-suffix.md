@@ -21,6 +21,8 @@ The authoritative source for these codes is the internal workbook `Nummerkreise_
 
 End the object name with `-SHB`, preferably as `<Kürzel>-SHB`, keeping the descriptive base within the 30-character budget so the suffix fits — for example `pageextension 55000 "Customer List Ext-SHB"`, `codeunit 74750 "Contract Mgt.-SHB"`, `enum 74850 "Doc. Text Status DXT-SHB"`. Plan the descriptive part around the suffix from the start rather than discovering the length limit at publish time. Apply the suffix uniformly to every object SHB creates.
 
+**⚠️ Permission Sets: 20-character identifier cap.** Unlike tables, pages, and codeunits (30 chars), `permissionset` and `permissionsetextension` identifiers are capped at **20 characters**. Include the `-SHB` suffix in your budget — for example `"Vendor Skill PIL-SHB"` (exactly 20) fits, but `"Vendor Skills PIL-SHB"` (21) does not. Abbreviate the descriptive part as needed to keep the full `-SHB` suffix, never drop the suffix to meet the limit.
+
 - **General / ad-hoc customer PTE work:** end the name with `-SHB`, or `<CustomerKürzel>-SHB` when the work belongs to a specific customer solution. The customer's Kürzel is resolved separately, not from this file.
 - **SHB product apps:** use the product's registered `<ProductKürzel>-SHB` (see *Product / app codes*), e.g. `PWS-SHB`, `RFS-SHB`, `ND2-SHB`.
 - **Certified / AppSource solutions:** use the reserved suffix *without* `-SHB` (see *Reserved certified suffixes*), e.g. objects in the certified project-management solution use `PMG`, not `PMG-SHB`.
@@ -83,3 +85,5 @@ Customer-specific suffixes are **not** stored in this file. A customer solution 
 ## Anti Pattern
 
 Object names with no suffix (`pageextension 55001 "Vendor List Ext"`), an inconsistent or ad-hoc marker (`"Vendor List Ext SHB"`, `"SHB_VendorListExt"`, a leading `SHB` prefix), a name padded to 30 characters that leaves no room for the suffix and forces a rename during hand-over, appending `-SHB` to a reserved certified suffix (`"... PMG-SHB"` for the certified project-management solution instead of `PMG`), or inventing a new Kürzel when a registered product code already exists in the workbook. **Leaking the suffix into user-facing text** — `Caption = 'Vendor Skill PIL-SHB'`, a `ToolTip` or `Label` that ends in `-SHB` — is equally wrong: the suffix is for the technical name, never for what the user reads.
+
+**Permission-set truncation trap:** `permissionset 55000 "Vendor Skills PIL-SHB"` (21 chars) fails compile; the temptation is to drop `-SHB` to fit, yielding `"Vendor Skills PIL"` (misidentified and unsuffixed). Correct fix: abbreviate to `"Vendor Skill PIL-SHB"` (exactly 20), keep the suffix intact.
