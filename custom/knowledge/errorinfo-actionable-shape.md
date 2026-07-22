@@ -32,6 +32,17 @@ Build the `ErrorInfo` from the real member surface below, then `Error(ErrInfo)`.
 
 Recovery rule: if an actionable-error rewrite does not compile, **fix the member name — do not delete the requirement.** Falling back to a bare `Error()` to reach green silently drops the "actionable" acceptance criterion.
 
+### The `Collectible` flag only matters under `ErrorBehavior::Collect`
+
+`ErrorInfo.Create(Message: Text; Collectible: Boolean)` — the second argument marks the error as **collectible**, meaning it can be *gathered* (rather than thrown-and-stopped) when the calling code runs under `ErrorBehavior::Collect` (e.g. batch/validation loops that want to report every failure at once, read back via `GetCollectedErrors`). It has **no effect** when the `ErrorInfo` is raised immediately with a plain `Error(ErrInfo)` outside a collect context — the error is thrown exactly as if `Collectible` were `false`.
+
+So passing `true` on an error you throw right away is not wrong, but it is **misleading**: it signals a collect-mode design that isn't there. Match the flag to the intent:
+
+- **Throwing immediately** (the common guard: `if not Rec.Get(...) then Error(ErrInfo)`) → use `ErrorInfo.Create(Message)` (one-arg) or pass `false`.
+- **Deliberately collecting** multiple failures under `ErrorBehavior::Collect` → pass `true`, and actually read them back with `GetCollectedErrors`.
+
+Don't set `Collectible := true` as cargo-cult boilerplate on every guard; it implies a collection mechanism a reviewer will look for and not find.
+
 ## Anti Pattern
 
 Reaching for invented members (and mis-asserting that the real factory is missing), which fails to compile:
