@@ -71,3 +71,15 @@ procedure AddSkill(VendorNo: Code[20]; SkillCode: Code[20]; ProficiencyLevel: En
 ```
 
 Reserve `Option` for a genuinely local, throwaway, non-persisted, non-exposed toggle. Anything stored on a table, shown to a user, translated, or crossing an interface/API boundary should be an `Enum`.
+
+## Recovery trap — do not *mask* a stale-symbol "Enum resolves as Option"
+
+When correctly-typed enum code suddenly refuses to compile with **`AA0252` "implicit conversion … from Enum … to Option"** on an assignment like `Rec."Proficiency Level" := ProficiencyLevel;`, or **`'Option' does not contain a definition for 'AsInteger'`** on `Rec."Proficiency Level".AsInteger()`, the field itself is being *seen* as `Option`, not `Enum`. The source is right; the **symbols are stale** — an older build of the extension (or a phantom duplicate copy of the object, e.g. a multi-root workspace that indexes `app/` twice) is supplying an outdated table shape where the field was still an `Option`.
+
+The seductive "fix" is to make the compiler stop complaining by converting at every use site — `:= ProficiencyLevel.AsInteger()`, `Format(...)`, an `Evaluate` round-trip. **Do not.** That masks a stale-symbol problem with a lossy conversion layer, and it *bakes an `Option` assumption back into freshly-correct enum code* — so the moment symbols refresh, the workaround is wrong (and `.AsInteger()` on a real enum field silently discards the enum type on write). It is the same failure mode as the ErrorInfo note's "if the rewrite doesn't compile, fix the member name — don't delete the requirement": here, **fix the symbols, don't downgrade the type.**
+
+Recovery rule:
+- **Keep the correct enum code** (`Rec."Enum Field" := SomeEnum;`, direct assignment; `Rec."Enum Field".AsInteger()` only where you genuinely need the ordinal, e.g. JSON serialization).
+- **Refresh the root cause:** uninstall/replace the old app version, re-download symbols (`AL: Download Symbols`), and rebuild. In a multi-root workspace, confirm the object isn't being indexed twice (see the build note on phantom "already declared" duplicates) before believing the error.
+- **Never** add `.AsInteger()`/`Format()` conversions or a `#pragma`/`AA0252` suppression to force green — al-conventions explicitly forbids suppressing `AA0252` for exactly this reason.
+
