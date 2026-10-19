@@ -25,14 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             .github/new-top-level-flag.md
           sparse-checkout-cone-mode: false
 
       - name: Flag unexpected new top-level entries
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
@@ -40,11 +40,12 @@ jobs:
             // Known, intended repository root. Anything else added at the root
             // is flagged for a human to eyeball.
             const ALLOWED_DIRS = new Set([
-              '.claude-plugin', '.github', 'community', 'custom', 'microsoft', 'skills', 'tools',
+              '.claude-plugin', '.github', 'community', 'custom', 'docs', 'evaluation',
+              'microsoft', 'skills', 'tools',
             ]);
             const ALLOWED_FILES = new Set([
               '.gitignore', 'CODEOWNERS', 'LICENSE', 'README.md',
-              'SECURITY.md', 'agent-consumption.md',
+              'SECURITY.md', 'plugin.json',
             ]);
 
             const MARKER = '<!-- guard:new-top-level -->';
